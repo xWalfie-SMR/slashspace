@@ -18,6 +18,29 @@ const homepage = document.getElementById("homepage") as HTMLDivElement;
 // Room list element
 const roomList = document.getElementById("rooms-list") as HTMLUListElement;
 
+// Create Room button
+const createRoomButton = document.getElementById("create-room") as HTMLButtonElement;
+
+// Add click handler for Create Room
+createRoomButton.addEventListener("click", () => {
+  const roomName = prompt("Enter a room name:");
+  if (!roomName || roomName.trim().length < 3) return;
+  ws.send(
+    JSON.stringify({
+      type: "JOIN_ROOM",
+      payload: {
+        roomName: roomName.trim(),
+        player: {
+          id: playerId,
+          username: JSON.parse(localStorage.getItem("username") || '""'),
+          x: 0,
+          y: 0,
+        },
+      },
+    })
+  );
+});
+
 // Initialize player ID
 const playerId = localStorage.getItem("playerId") || crypto.randomUUID();
 localStorage.setItem("playerId", playerId);
