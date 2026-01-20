@@ -1,3 +1,9 @@
+// frontend/src/main.ts
+
+// Initialize WebSocket connection
+const ws = new WebSocket(`ws://${location.host}/ws`);
+
+// Username modal elements
 const usernameModal = document.getElementById(
   "username-modal",
 ) as HTMLDivElement;
@@ -6,8 +12,17 @@ const usernameButton = document.getElementById(
   "submit-username",
 ) as HTMLButtonElement;
 
+// Homepage element
 const homepage = document.getElementById("homepage") as HTMLDivElement;
 
+// Room list element
+const roomList = document.getElementById("rooms-list") as HTMLUListElement;
+
+// Initialize player ID
+const playerId = localStorage.getItem("playerId") || crypto.randomUUID();
+localStorage.setItem("playerId", playerId);
+
+// Checks for existing username in local storage, shows modal if not found, otherwise shows homepage.
 if (localStorage.getItem("username")) {
   usernameModal.hidden = true;
   homepage.hidden = false;
@@ -24,3 +39,45 @@ if (localStorage.getItem("username")) {
     }
   });
 }
+
+ws.addEventListener("open", () => {
+  console.log(`Connected to WebSocket server at ws://${location.host}/ws`);
+  ws.send(JSON.stringify({ type: "GET_ROOMS" }));
+});
+
+ws.addEventListener("message", (event) => {
+  const data = JSON.parse(event.data);
+  switch (data.type) {
+    case "ROOMS_LIST":
+      roomList.innerHTML = "";
+      for (const room of data.rooms) {
+        const roomItem = document.createElement("li");
+        roomItem.textContent = room.name;
+        roomItem.addEventListener("click", () => {
+          ws.send(
+            JSON.stringify({
+              type: "JOIN_ROOM",
+              payload: {
+                roomName: room.name,
+                player: {
+                  id: playerId,
+                  username: JSON.parse(
+                    localStorage.getItem("username") || '""',
+                  ),
+                  x: 0,
+                  y: 0,
+                },
+              },
+            }),
+          );
+        });
+        roomList.appendChild(roomItem);
+      }
+      break;
+    case "ROOM_JOINED":
+      homepage.hidden = true;
+      const roomView = document.getElementById("room-view") as HTMLDivElement;
+      roomView.hidden = false;
+      break;
+  }
+});
