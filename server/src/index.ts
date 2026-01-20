@@ -1,7 +1,7 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import http from 'http';
 import dotenv from 'dotenv';
-import { Player, Room } from '../../shared/types';
+import { Player, Room, WebSocketMessage } from '../../shared/types';
 
 dotenv.config();
 
@@ -41,7 +41,17 @@ wss.on('connection', (ws) => {
     console.log('New client connected');
 
     ws.on('message', (message) => {
-        console.log(`Received message: ${message.toString()}`);
+        const data = JSON.parse(message.toString()) as WebSocketMessage;
+
+        switch (data.type) {
+            case 'GET_ROOMS':
+                ws.send(JSON.stringify({ type: 'ROOMS_LIST', rooms: getRooms() }));
+                break;
+            case 'JOIN_ROOM':
+                const room = joinRoom(data.payload.roomName, data.payload.player);
+                ws.send(JSON.stringify({ type: 'ROOM_JOINED', room }));
+                break;
+        };
     });
 
     ws.on('close', () => {
