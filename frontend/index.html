@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SlashSpace</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="username-modal" hidden>
+      <h3 class="text-primary">Username</h3>
+      <input type="text" id="username" />
+      <button id="submit-username">Submit</button>
+    </div>
+
+    <div id="homepage" hidden>
+      <h3 class="text-primary">Rooms</h3>
+      <ul id="rooms-list"></ul>
+      <button id="create-room">Create Room</button>
+    </div>
+
+    <div id="room-view" hidden>
+      <canvas id="game-canvas"></canvas>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
