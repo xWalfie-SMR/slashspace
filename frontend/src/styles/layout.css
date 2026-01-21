@@ -1,0 +1,25 @@
+/* Layout components */
+
+.room-view {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.back-button {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: var(--z-index-back-button);
+}
+
+.room-info {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: var(--z-index-room-info);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}

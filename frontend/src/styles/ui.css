@@ -1,0 +1,35 @@
+/* UI component styles */
+
+.back-button {
+  color: var(--color-text-primary);
+  background: none;
+  border: none;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  color: var(--color-text-secondary);
+}
+
+.room-info {
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+}
+
+.room-name {
+  font-size: var(--font-size-lg);
+  margin-bottom: 4px;
+}
+
+.room-players {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.current-username {
+  font-size: var(--font-size-md);
+  margin-top: 8px;
+}

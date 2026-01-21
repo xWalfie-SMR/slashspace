@@ -1,10 +1,20 @@
 // frontend/src/main.ts
 
+import "./styles/variables.css";
+import "./styles/base.css";
+import "./styles/layout.css";
+import "./styles/canvas.css";
+import "./styles/ui.css";
+import "./styles/theme.css";
+
 import {
-  createCursor,
+  initCanvas,
+  startRenderLoop,
+  stopRenderLoop,
   updateCursor,
-  clearAllCursors,
+  addCursor,
   removeCursor,
+  clearAllCursors,
 } from "./cursors";
 
 // Initialize WebSocket connection
@@ -117,6 +127,38 @@ ws.addEventListener("message", (event) => {
       roomView.hidden = false;
       currentRoom = data.room.name;
 
+      // Initialize canvas and start render loop
+      initCanvas();
+      startRenderLoop();
+
+      // Update room info display
+      const roomNameElement = document.getElementById("room-name") as HTMLDivElement;
+      const roomPlayersElement = document.getElementById("room-players") as HTMLDivElement;
+      const currentUsernameElement = document.getElementById("current-username") as HTMLDivElement;
+      
+      roomNameElement.textContent = data.room.name;
+      roomPlayersElement.textContent = `${data.room.players.length} player${data.room.players.length !== 1 ? 's' : ''}`;
+      currentUsernameElement.textContent = JSON.parse(localStorage.getItem("username") || '""');
+
+      // Add existing players to cursor tracking
+      for (const player of data.room.players) {
+        if (player.id !== playerId) {
+          addCursor(player.id, player.username);
+        }
+      }
+
+      // Back button handler
+      const backButton = document.getElementById("back-button") as HTMLButtonElement;
+      backButton.onclick = () => {
+        ws.send(JSON.stringify({
+          type: "LEAVE_ROOM",
+          payload: {
+            roomName: currentRoom,
+            playerId,
+          },
+        }));
+      };
+
       roomView.addEventListener("mousemove", (event) => {
         ws.send(
           JSON.stringify({
@@ -136,12 +178,21 @@ ws.addEventListener("message", (event) => {
       if (data.payload.playerId === playerId) break;
       if (!currentRoom) break;
 
-      createCursor(data.payload.playerId, data.payload.username);
+      addCursor(data.payload.playerId, data.payload.username);
       updateCursor(data.payload.playerId, data.payload.x, data.payload.y);
       break;
     }
     case "LEAVE_ROOM": {
       removeCursor(data.payload.player.id);
+      
+      if (data.payload.player.id === playerId) {
+        // Current user left the room
+        stopRenderLoop();
+        const roomView = document.getElementById("room-view") as HTMLDivElement;
+        roomView.hidden = true;
+        homepage.hidden = false;
+        ws.send(JSON.stringify({ type: "GET_ROOMS" }));
+      }
       break;
     }
   }

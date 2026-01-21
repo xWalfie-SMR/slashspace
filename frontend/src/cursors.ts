@@ -1,37 +1,95 @@
-const cursors = new Map<string, HTMLDivElement>();
+type CursorData = {
+  x: number;
+  y: number;
+  username: string;
+};
 
-export function createCursor(id: string, username: string): void {
-  if (cursors.has(id)) return;
+let canvas: HTMLCanvasElement | null = null;
+let ctx: CanvasRenderingContext2D | null = null;
+let animationFrameId: number | null = null;
 
-  const el = document.createElement("div");
-  el.innerHTML = `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 3L10 22L12.0513 15.8461C12.6485 14.0544 14.0544 12.6485 15.846 12.0513L22 10L3 3Z" stroke="#e5e5e5" stroke-width="2" stroke-linejoin="round"/>
-        </svg>
-        <span style="color:#e5e5e5;font-size:12px;margin-left:4px;">${username}</span>
-    `;
-  el.style.cssText =
-    "position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; display: flex; align-items: center;";
-  document.body.appendChild(el);
-  cursors.set(id, el);
+const cursors = new Map<string, CursorData>();
+
+function handleResize(): void {
+  if (!canvas) return;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function renderLoop(): void {
+  if (!ctx) return;
+
+  // Clear canvas with black background
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, canvas!.width, canvas!.height);
+
+  // WASM will draw cursor visuals here
+  // TODO: Call WASM render function when available
+
+  animationFrameId = requestAnimationFrame(renderLoop);
+}
+
+export function initCanvas(): void {
+  if (canvas) return;
+
+  canvas = document.createElement("canvas");
+  canvas.className = "canvas-element";
+  document.body.appendChild(canvas);
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  ctx = canvas.getContext("2d");
+
+  window.addEventListener("resize", handleResize);
+}
+
+export function startRenderLoop(): void {
+  if (animationFrameId) return;
+  renderLoop();
+}
+
+export function stopRenderLoop(): void {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+
+  if (canvas) {
+    canvas.remove();
+    canvas = null;
+    ctx = null;
+  }
+
+  window.removeEventListener("resize", handleResize);
 }
 
 export function updateCursor(id: string, x: number, y: number): void {
-  const el = cursors.get(id);
-  if (!el) return;
+  const cursor = cursors.get(id);
+  if (!cursor) return;
 
-  el.style.transform = `translate(${x}px, ${y}px)`;
+  cursor.x = x;
+  cursor.y = y;
+}
+
+export function addCursor(id: string, username: string): void {
+  if (cursors.has(id)) return;
+
+  cursors.set(id, {
+    x: 0,
+    y: 0,
+    username,
+  });
 }
 
 export function removeCursor(id: string): void {
-  const el = cursors.get(id);
-  if (!el) return;
-
-  el.remove();
   cursors.delete(id);
 }
 
+export function getCursorData(): Map<string, CursorData> {
+  return cursors;
+}
+
 export function clearAllCursors(): void {
-  cursors.forEach((el) => el.remove());
   cursors.clear();
 }

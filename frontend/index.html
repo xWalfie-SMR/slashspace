@@ -19,8 +19,13 @@
       <button id="create-room">Create Room</button>
     </div>
 
-    <div id="room-view" hidden>
-      <canvas id="game-canvas"></canvas>
+    <div id="room-view" hidden class="room-view">
+      <button id="back-button" class="back-button">← Back</button>
+      <div id="room-info" class="room-info">
+        <div id="room-name" class="room-name"></div>
+        <div id="room-players" class="room-players"></div>
+        <div id="current-username" class="current-username"></div>
+      </div>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

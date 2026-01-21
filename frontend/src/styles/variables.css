@@ -1,0 +1,20 @@
+/* Variables */
+
+:root {
+  /* Palette */
+  --color-text-primary: #E5E5E5;
+  --color-text-secondary: #A1A1A1;
+  --color-bg: #000000;
+
+  /* Typography */
+  --font-family: monospace;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+
+  /* Z-index layers */
+  --z-index-canvas: 1;
+  --z-index-ui: 10;
+  --z-index-back-button: 11;
+  --z-index-room-info: 11;
+}
