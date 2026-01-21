@@ -16,3 +16,4 @@ export type WebSocketMessage =
     | { type: 'GET_ROOMS' }
     | { type: 'JOIN_ROOM'; payload: { roomName: string; player: Player } }
     | { type: 'LEAVE_ROOM'; payload: { roomName: string; player: Player } }
+    | { type: 'CURSOR_UPDATE'; payload: { roomName: string; playerId: string; x: number; y: number } }
