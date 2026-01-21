@@ -1,0 +1,29 @@
+.back-button {
+  color: var(--color-text-primary);
+  background: none;
+  border: none;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.back-button:hover {
+  color: var(--color-text-secondary);
+}
+
+.room-info {
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+}
+
+.room-info .label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.room-info div {
+  margin-bottom: 4px;
+}

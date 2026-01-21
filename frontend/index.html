@@ -4,23 +4,40 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SlashSpace</title>
-    <!-- Styles are now imported in main.ts -->
   </head>
   <body>
     <div id="username-modal" hidden>
-      <h3 class="text-primary">Username</h3>
-      <input type="text" id="username" />
-      <button id="submit-username">Submit</button>
+      <div class="ui-container">
+        <h3>Username</h3>
+        <input type="text" id="username" placeholder="Enter username..." />
+        <button id="submit-username">Submit</button>
+      </div>
     </div>
 
     <div id="homepage" hidden>
-      <h3 class="text-primary">Rooms</h3>
-      <ul id="rooms-list"></ul>
-      <button id="create-room">Create Room</button>
+      <div class="ui-container">
+        <h3>Rooms</h3>
+        <ul id="rooms-list"></ul>
+        <button id="create-room">Create Room</button>
+      </div>
     </div>
 
-    <div id="room-view" hidden>
+    <div id="room-view" class="room-view" hidden>
       <canvas id="game-canvas"></canvas>
+      <div class="ui-container">
+        <div class="ui-top-row">
+          <div class="ui-left">
+            <button id="back-to-home" class="back-button">← BACK</button>
+          </div>
+          <div class="ui-right">
+            <div id="room-info" class="room-info">
+              <div><span class="label">ROOM:</span> <span id="info-room-name"></span></div>
+              <div><span class="label">PLAYERS:</span> <span id="info-player-count"></span></div>
+              <div><span class="label">USER:</span> <span id="info-username"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="/src/main.ts"></script>
