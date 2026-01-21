@@ -1,10 +1,21 @@
 // frontend/src/main.ts
 
+import './styles/variables.css';
+import './styles/base.css';
+import './styles/layout.css';
+import './styles/canvas.css';
+import './styles/ui.css';
+import './styles/theme.css';
+
 import {
-  createCursor,
+  initCanvas,
+  startRenderLoop,
+  stopRenderLoop,
+  addCursor,
   updateCursor,
-  clearAllCursors,
   removeCursor,
+  clearAllCursors,
+  getCursorData,
 } from "./cursors";
 
 // Initialize WebSocket connection
@@ -31,12 +42,26 @@ const createRoomButton = document.getElementById(
   "create-room",
 ) as HTMLButtonElement;
 
+// Room view elements
+const roomView = document.getElementById("room-view") as HTMLDivElement;
+const backButton = document.getElementById("back-to-home") as HTMLButtonElement;
+const infoRoomName = document.getElementById("info-room-name") as HTMLSpanElement;
+const infoPlayerCount = document.getElementById("info-player-count") as HTMLSpanElement;
+const infoUsername = document.getElementById("info-username") as HTMLSpanElement;
+
 // Initialize player ID
 const playerId = localStorage.getItem("playerId") || crypto.randomUUID();
 localStorage.setItem("playerId", playerId);
 
 // Current room
 let currentRoom: string | null = null;
+let currentUsername: string = JSON.parse(localStorage.getItem("username") || '""');
+
+function updateRoomInfo(roomName: string, playerCount: number) {
+  if (infoRoomName) infoRoomName.textContent = roomName;
+  if (infoPlayerCount) infoPlayerCount.textContent = playerCount.toString();
+  if (infoUsername) infoUsername.textContent = currentUsername;
+}
 
 // Add click handler for Create Room
 createRoomButton.addEventListener("click", () => {
@@ -49,7 +74,7 @@ createRoomButton.addEventListener("click", () => {
         roomName: roomName.trim(),
         player: {
           id: playerId,
-          username: JSON.parse(localStorage.getItem("username") || '""'),
+          username: currentUsername,
           x: 0,
           y: 0,
         },
@@ -58,8 +83,24 @@ createRoomButton.addEventListener("click", () => {
   );
 });
 
+// Back to home handler
+backButton.addEventListener("click", () => {
+  // In a real app, we might send a LEAVE_ROOM message
+  // For now, we'll just reload or hide the room view
+  roomView.hidden = true;
+  homepage.hidden = false;
+  currentRoom = null;
+  stopRenderLoop();
+  clearAllCursors();
+  // We should also probably tell the server, but current server only handles close
+  // Let's just disconnect and reconnect to keep it simple and consistent with server logic
+  // ws.close(); 
+  // Actually, better to just let it be for now or refresh.
+  location.reload(); 
+});
+
 // Checks for existing username in local storage, shows modal if not found, otherwise shows homepage.
-if (localStorage.getItem("username")) {
+if (currentUsername) {
   usernameModal.hidden = true;
   homepage.hidden = false;
 } else {
@@ -68,6 +109,7 @@ if (localStorage.getItem("username")) {
   usernameButton.addEventListener("click", () => {
     const username = usernameField.value;
     if (username && username.length >= 3 && username.length <= 16) {
+      currentUsername = username;
       localStorage.setItem("username", JSON.stringify(username));
       usernameField.value = "";
       usernameModal.hidden = true;
@@ -77,7 +119,7 @@ if (localStorage.getItem("username")) {
 }
 
 ws.addEventListener("open", () => {
-  console.log(`Connected to WebSocket server at wss://${location.host}/ws`);
+  console.log(`Connected to WebSocket server`);
   ws.send(JSON.stringify({ type: "GET_ROOMS" }));
 });
 
@@ -97,9 +139,7 @@ ws.addEventListener("message", (event) => {
                 roomName: room.name,
                 player: {
                   id: playerId,
-                  username: JSON.parse(
-                    localStorage.getItem("username") || '""',
-                  ),
+                  username: currentUsername,
                   x: 0,
                   y: 0,
                 },
@@ -112,12 +152,24 @@ ws.addEventListener("message", (event) => {
       break;
     case "ROOM_JOINED": {
       clearAllCursors();
+      initCanvas();
+      startRenderLoop();
+      
       homepage.hidden = true;
-      const roomView = document.getElementById("room-view") as HTMLDivElement;
       roomView.hidden = false;
       currentRoom = data.room.name;
+      
+      // Initial players
+      data.room.players.forEach((p: any) => {
+        if (p.id !== playerId) {
+          addCursor(p.id, p.username);
+        }
+      });
+      
+      updateRoomInfo(data.room.name, data.room.playerCount);
 
       roomView.addEventListener("mousemove", (event) => {
+        if (!currentRoom) return;
         ws.send(
           JSON.stringify({
             type: "CURSOR_UPDATE",
@@ -136,12 +188,25 @@ ws.addEventListener("message", (event) => {
       if (data.payload.playerId === playerId) break;
       if (!currentRoom) break;
 
-      createCursor(data.payload.playerId, data.payload.username);
+      const beforeSize = getCursorData().size;
+      addCursor(data.payload.playerId, data.payload.username);
+      const afterSize = getCursorData().size;
+      
+      if (beforeSize !== afterSize) {
+        if (infoPlayerCount) infoPlayerCount.textContent = (afterSize + 1).toString();
+      }
+      
       updateCursor(data.payload.playerId, data.payload.x, data.payload.y);
       break;
     }
     case "LEAVE_ROOM": {
-      removeCursor(data.payload.player.id);
+      if (data.payload.player.id === playerId) {
+        stopRenderLoop();
+      } else {
+        removeCursor(data.payload.player.id);
+        const count = getCursorData().size + 1;
+        if (infoPlayerCount) infoPlayerCount.textContent = count.toString();
+      }
       break;
     }
   }

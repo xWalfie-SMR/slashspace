@@ -1,0 +1,14 @@
+:root {
+  --color-text-primary: #E5E5E5;
+  --color-text-secondary: #A1A1A1;
+  --color-bg: #000000;
+  
+  --font-family: monospace;
+  
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  
+  --z-index-canvas: 0;
+  --z-index-ui: 10;
+}
